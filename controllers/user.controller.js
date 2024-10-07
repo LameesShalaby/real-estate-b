@@ -4,28 +4,9 @@ import User from "../db/models/user.model.js";
 
 // Get All users
 
-export const getAllUsers = async (req, res) => {
-  try {
-    const users = await User.find();
-    res.status(200).json(users);
-  } catch (error) {
-    console.error("Failed to get users:", error);
-    res.status(500).json({ error: "Failed to retrieve users" });
-  }
-};
 
 // Add User
 
-export const addUser = async (req, res) => {
-  const { userName, email, password } = req.body;
-  const user = new User({ userName, email, password });
-  try {
-    const newuser = await user.save();
-    res.status(201).json(newuser);
-  } catch (err) {
-    res.status(400).json({ message: "Faild to add user", err });
-  }
-};
 
 //UpdateUser
 
