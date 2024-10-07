@@ -2,6 +2,8 @@ import bcrypt from "bcrypt";
 import User from "../db/models/user.model.js";
 import { registerValidation } from "../validation/registerValidation .js";
 import { loginValidation } from "../validation/loginValidation.js";
+const jwt = require("jsonwebtoken");
+const secretKey = "my_secret_key";
 
 // Register
 
@@ -59,6 +61,7 @@ export const register = async (req, res) => {
       const matchPassword = await bcrypt.compare(password, findUser.password);
       if (matchPassword) {
         //check if password match or not
+        const token = jwt.sign({email, password}, secretKey, { expiresIn: "1h" });
         res.status(200).send("Logged in successfully");
       } else {
         res.status(400).send("Wrong Email or password!");
