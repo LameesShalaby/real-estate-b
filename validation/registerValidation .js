@@ -2,6 +2,7 @@ import Joi from "joi";
 
 export const registerValidation = Joi.object({
   role: Joi.number().integer().default(2),
+  email: Joi.string().email().required(),
   username: Joi.string().alphanum().min(3).max(30).required(),
   password: Joi.string().min(8).required(),
   confirmPassword: Joi.any()
