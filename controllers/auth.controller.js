@@ -1,9 +1,8 @@
 import bcrypt from "bcrypt";
 import User from "../db/models/user.model.js";
+import jwt from "jsonwebtoken"
 import { registerValidation } from "../validation/registerValidation .js";
 import { loginValidation } from "../validation/loginValidation.js";
-const jwt = require("jsonwebtoken");
-const secretKey = "my_secret_key";
 
 // Register
 
@@ -51,6 +50,7 @@ export const register = async (req, res) => {
     }
     try {
       const { email, password } = req.body;
+      
       //find the user
       // const findUser = User.find((user) => user.username === username)
       const findUser = await User.findOne({ email });
@@ -61,8 +61,12 @@ export const register = async (req, res) => {
       const matchPassword = await bcrypt.compare(password, findUser.password);
       if (matchPassword) {
         //check if password match or not
-        const token = jwt.sign({email, password}, secretKey, { expiresIn: "1h" });
-        res.status(200).send("Logged in successfully");
+        const token = jwt.sign({id: findUser._id, email: findUser.email}, process.env.SECRET_KEY, { expiresIn: "1h" });
+
+        // res.status(200).send("Logged in successfully",{...other, token});
+
+        res.status(200).json({ message: "Logged in successfully", user: { id: findUser._id, email: findUser.email, username: findUser.username }, token });
+
       } else {
         res.status(400).send("Wrong Email or password!");
       }
@@ -70,4 +74,3 @@ export const register = async (req, res) => {
       res.status(500).send({ message: error.message });
     }
   };
-  

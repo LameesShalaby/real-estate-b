@@ -38,13 +38,44 @@ export const deleteUser = async (req, res) => {
   try {
     const id = req.params.id;
     const user = await User.findByIdAndDelete(id);
-    console.log(user);
-    const usersAfterDelete = await User.find();
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
     res.status(200).json({ message: "user deleted successfully" });
-  } catch (err) {
+  }
+   catch (err) {
     console.log(err);
     res.status(500).json({ err });
   }
 };
 
-// updatedPassword
+
+// update Password
+
+
+// update profile
+
+export const updateProfile = async (req, res) => {
+  const { userId } = req.params;
+  const { username, avatar, phoneNumber } = req.body;
+
+  try {
+    const updates = {};
+
+    if (username) updates.username = username;
+    if (avatar) updates.avatar = avatar;
+    if (phoneNumber) updates.phoneNumber = phoneNumber;
+
+    const updatedProfile = await User.findByIdAndUpdate(userId, updates, {
+      new: true,
+    });
+
+    if (!updatedProfile) {
+      return res.status(404).json({ message: "Profile not found" });
+    }
+
+    res.status(200).json({ message: "Profile updated successfully", user: updatedProfile });
+  } catch (err) {
+    res.status(500).json({ error: "There was an error while updating the profile." });
+  }
+};
