@@ -4,8 +4,44 @@ import User from "../db/models/user.model.js";
 
 // Get All users
 
+export const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find();
+    res.status(200).json({ users });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to retrieve users", error: err.message });
+  }
+};
 
 // Add User
+export const addUser = async (req, res) => {
+  try {
+    const { username, email, password,  phoneNumber,role, avatar } = req.body;
+
+    // Verify the existence of the password
+    if (!password) {
+      return res.status(400).json({ message: "Password is required" });
+    }
+
+    // Hashed Password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = new User({
+      username,
+      email,
+      password: hashedPassword, 
+      phoneNumber,
+      role,
+      avatar,
+    });
+
+    await newUser.save();
+    res.status(201).json({ message: "User added successfully", user: newUser });
+  } catch (err) {
+    res.status(400).json({ message: "Failed to add user", error: err.message });
+  }
+};
+
 
 
 //UpdateUser
