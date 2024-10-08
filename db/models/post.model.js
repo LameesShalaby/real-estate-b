@@ -9,25 +9,22 @@ const postDetailSchema = new mongoose.Schema({
   size: { type: Number, required: false },
   bedroom: { type: Number, required: true },
   bathroom: { type: Number, required: true },
-  garage:{type: Number, required: true},
+  garage: { type: Number, required: false }, // Optional garage field
   type: {
     type: String,
-    enum: ['buy', 'rent'],
+    enum: ["buy", "rent"],
     required: true,
   },
-
- //   nearby
+  // Nearby amenities
   school: { type: Number, required: false },
   bus: { type: Number, required: false },
   restaurant: { type: Number, required: false },
-  university:{ type: Number, required: false },
-  grocerycenter:{ type: Number, required: false },
-  market:{ type: Number, required: false },
-  hospital:{ type: Number, required: false },
-  metroStation:{ type: Number, required: false },
-  gym:{ type: Number, required: false },
-
-  postId: { type: mongoose.Schema.Types.ObjectId, ref: "Post", unique: true },
+  university: { type: Number, required: false },
+  grocerycenter: { type: Number, required: false },
+  market: { type: Number, required: false },
+  hospital: { type: Number, required: false },
+  metroStation: { type: Number, required: false },
+  gym: { type: Number, required: false },
 });
 
 // Post schema
@@ -40,18 +37,16 @@ const postSchema = new mongoose.Schema({
   city: { type: String, required: true },
   bedroom: { type: Number, required: true },
   bathroom: { type: Number, required: true },
-  
   latitude: { type: String, required: true },
   longitude: { type: String, required: true },
-
   type: {
     type: String,
-    enum: ['buy', 'rent'],
+    enum: ["buy", "rent"],
     required: true,
   },
   property: {
     type: String,
-    enum: ['apartment', 'house', 'villa'],
+    enum: ["apartment", "house", "villa"],
     required: true,
   },
   createdAt: { type: Date, default: Date.now },

@@ -15,4 +15,5 @@ export const registerValidation = Joi.object({
     .messages({
       "string.pattern.base": "Phone number must be between 10 and 15 digits",
     }),
+  avatar: Joi.string().optional(), 
 });
