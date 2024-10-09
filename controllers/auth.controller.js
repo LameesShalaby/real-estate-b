@@ -1,4 +1,4 @@
-import bcrypt from "bcrypt";
+import bcryptjs from "bcryptjs";
 import User from "../db/models/user.model.js";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
@@ -21,7 +21,7 @@ export const register = async (req, res) => {
       return res.status(409).json({ error: "Email is already taken" });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcryptjs.hash(password, 10);
 
     const newUser = new User({
       email,
@@ -54,7 +54,7 @@ export const login = async (req, res) => {
     if (!findUser) {
       return res.status(400).send("Wrong Email or password!");
     }
-    const matchPassword = await bcrypt.compare(password, findUser.password);
+    const matchPassword = await bcryptjs.compare(password, findUser.password);
     if (matchPassword) {
       const token = jwt.sign(
         { id: findUser._id, email: findUser.email },
@@ -78,15 +78,14 @@ export const login = async (req, res) => {
   }
 };
 
-
 // Nodemailer
 // For demonstration: configure the email transporter
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  service: "gmail",
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
+    pass: process.env.EMAIL_PASS,
+  },
 });
 
 export const forgotPassword = async (req, res) => {
@@ -99,7 +98,7 @@ export const forgotPassword = async (req, res) => {
     }
 
     const resetToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, {
-      expiresIn: "1h"
+      expiresIn: "1h",
     });
 
     // Send email
@@ -107,7 +106,7 @@ export const forgotPassword = async (req, res) => {
       from: process.env.EMAIL_USER,
       to: email,
       subject: "Password Reset",
-      text: `You can reset your password using this token: ${resetToken}`
+      text: `You can reset your password using this token: ${resetToken}`,
     };
 
     await transporter.sendMail(mailOptions);
@@ -132,14 +131,12 @@ export const resetPassword = async (req, res) => {
     }
 
     // Hash the new password
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const hashedPassword = await bcryptjs.hash(newPassword, 10);
     user.password = hashedPassword;
     await user.save();
 
     res.status(200).json({ message: "Password reset successful" });
-
   } catch (error) {
     res.status(400).json({ message: "Invalid or expired token", error });
   }
 };
-
