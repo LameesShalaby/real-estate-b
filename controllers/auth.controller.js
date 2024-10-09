@@ -98,7 +98,7 @@ export const forgotPassword = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const resetToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+    const resetToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, {
       expiresIn: "1h"
     });
 
@@ -122,7 +122,9 @@ export const resetPassword = async (req, res) => {
   const { token, newPassword } = req.body;
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    console.log("Token received:", token);
+
     const user = await User.findById(decoded.id);
 
     if (!user) {
@@ -135,9 +137,9 @@ export const resetPassword = async (req, res) => {
     await user.save();
 
     res.status(200).json({ message: "Password reset successful" });
-    console.log("Token received:", token);
 
   } catch (error) {
     res.status(400).json({ message: "Invalid or expired token", error });
   }
 };
+
