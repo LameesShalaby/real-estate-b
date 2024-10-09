@@ -5,6 +5,7 @@ import { registerValidation } from "../validation/registerValidation.js";
 import { loginValidation } from "../validation/loginValidation.js";
 
 // Register
+
 export const register = async (req, res) => {
   const { error } = registerValidation.validate(req.body);
   if (error) {
@@ -40,6 +41,7 @@ export const register = async (req, res) => {
 };
 
 // Login
+
 export const login = async (req, res) => {
   const { error } = loginValidation.validate(req.body);
   if (error) {
@@ -55,7 +57,7 @@ export const login = async (req, res) => {
     if (matchPassword) {
       const token = jwt.sign(
         { id: findUser._id, email: findUser.email },
-        process.env.SECRET_KEY,
+        process.env.JWT_SECRET_KEY,
         { expiresIn: "1h" }
       );
       res.status(200).json({

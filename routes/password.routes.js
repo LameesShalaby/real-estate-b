@@ -1,21 +1,17 @@
-// const express = require("express");
+import express from "express";
+import * as passController from "../controllers/password.controller.js";
 
-// import {
-//   getForgotPasswordView,
-//   getResetPasswordView,
-//   resetThePassword,
-//   sendForgotPasswordLink,
-// } from "../controllers/password.controller.js";
+const router = express.Router();
 
-// const router = express.Router();
+// Forget
 
-// router
-//   .route("/forgot-password")
-//   .get(getForgotPasswordView)
-//   .post(sendForgotPasswordLink);
-// router
-//   .route("/reset-password/:userId/:token")
-//   .get(getResetPasswordView)
-//   .post(resetThePassword);
+router.get("/forgot-password" , passController.getForgotPasswordView);
+router.post("/forgot-password" , passController.sendForgotPasswordLink);
 
-// module.exports = router;
+// Reset
+
+router.get("/reset-password/:userId/:token" , passController.getResetPasswordView);
+router.post("/reset-password/:userId/:token" , passController.resetThePassword);
+
+
+export default router;

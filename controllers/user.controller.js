@@ -1,4 +1,3 @@
-// import bcrypt from "bcrypt";
 import User from "../db/models/user.model.js";
 
 // Get All users
@@ -40,6 +39,7 @@ export const updateUser = async (req, res) => {
 };
 
 // Delete User
+
 export const deleteUser = async (req, res) => {
   try {
     const user = await User.findByIdAndDelete(req.user.id);
