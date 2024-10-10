@@ -1,4 +1,4 @@
-import bcrypt from "bcrypt";
+import bcryptjs from "bcryptjs";
 import User from "../db/models/user.model.js";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
@@ -21,7 +21,7 @@ export const register = async (req, res) => {
       return res.status(409).json({ error: "Email is already taken" });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcryptjs.hash(password, 10);
 
     const newUser = new User({
       email,
@@ -54,7 +54,7 @@ export const login = async (req, res) => {
     if (!findUser) {
       return res.status(400).send("Wrong Email or password!");
     }
-    const matchPassword = await bcrypt.compare(password, findUser.password);
+    const matchPassword = await bcryptjs.compare(password, findUser.password);
     if (matchPassword) {
       const token = jwt.sign(
         { id: findUser._id, email: findUser.email },
@@ -78,6 +78,7 @@ export const login = async (req, res) => {
   }
 };
 
+// Nodemailer
 // Configure the email transporter
 const transporter = nodemailer.createTransport({
   service: "Gmail",
