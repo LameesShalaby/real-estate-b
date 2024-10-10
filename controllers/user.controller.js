@@ -1,4 +1,19 @@
+import bcrypt from 'bcrypt';
 import User from "../db/models/user.model.js";
+
+
+// Get All users
+
+export const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find();
+    res.status(200).json({ users });
+  } catch (err) {
+    res
+      .status(500)
+      .json({ message: "Failed to retrieve users", error: err.message });
+  }
+};
 
 // Add User
 export const addUser = async (req, res) => {
@@ -29,18 +44,7 @@ export const addUser = async (req, res) => {
   }
 };
 
-// Get All users
 
-export const getAllUsers = async (req, res) => {
-  try {
-    const users = await User.find();
-    res.status(200).json({ users });
-  } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Failed to retrieve users", error: err.message });
-  }
-};
 
 // Update User
 export const updateUser = async (req, res) => {
@@ -96,13 +100,13 @@ export const updatePasswordWithOTP = async (req, res) => {
 
 export const deleteUser = async (req, res) => {
   try {
-    const user = await User.findByIdAndDelete(req.user.id);
+    const user = await User.findByIdAndDelete(req.params.id);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
     res.status(200).json({ message: "User deleted successfully" });
   } catch (err) {
     console.log(err);
-    res.status(500).json({ err });
+    res.status(500).json({ message: "Failed to delete user", error: err.message });
   }
 };
