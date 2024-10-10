@@ -38,6 +38,31 @@ export const updateUser = async (req, res) => {
   }
 };
 
+// update pass (otp)
+
+export const updatePasswordWithOTP = async (req, res) => {
+  try {
+    const { email ,newPassword } = req.body;
+
+    // Find the user by email 
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update the user's password
+    user.password = hashedPassword;
+    await user.save();
+
+    res.status(200).json({ message: "Password updated successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to update password", error: err.message });
+  }
+};
+
 // Delete User
 
 export const deleteUser = async (req, res) => {

@@ -78,17 +78,16 @@ export const login = async (req, res) => {
   }
 };
 
-
-// Nodemailer
-// For demonstration: configure the email transporter
+// Configure the email transporter
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  service: "Gmail",
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
+    pass: process.env.EMAIL_PASS,
+  },
 });
 
+// Forgot Password: Send OTP to user's email
 export const forgotPassword = async (req, res) => {
   const { email } = req.body;
 
@@ -98,48 +97,92 @@ export const forgotPassword = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const resetToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, {
-      expiresIn: "1h"
-    });
+    // Generate a random 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000);
+    const otpExpires = Date.now() + 10 * 60 * 1000; // OTP expires in 10 minutes
 
-    // Send email
+    // Store the OTP and expiration in the user’s record
+    user.otp = otp;
+    user.otpExpires = otpExpires;
+    await user.save();
+
+    // Send OTP via email
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
-      subject: "Password Reset",
-      text: `You can reset your password using this token: ${resetToken}`
+      subject: "Password Reset OTP",
+      text: `Your OTP code for password reset is: ${otp}`,
     };
 
     await transporter.sendMail(mailOptions);
-
-    res.status(200).json({ message: "Password reset email sent" });
+    res.status(200).json({ message: "OTP sent successfully" });
   } catch (error) {
-    res.status(500).json({ message: "An error occurred", error });
+    res.status(500).json({ message: "Failed to send OTP", error });
   }
 };
 
-export const resetPassword = async (req, res) => {
-  const { token, newPassword } = req.body;
 
+export const verifyOtpAndUpdatePassword = async (req, res) => {
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-    console.log("Token received:", token);
+    const { email, otp, newPassword } = req.body;
 
-    const user = await User.findById(decoded.id);
-
+    // Find the user by email
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
+    // Check if OTP is valid and not expired
+    
+    if (user.otp !== parseInt(otp, 10)) {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+    if (Date.now() > user.otpExpires) {
+      return res.status(400).json({ message: "OTP has expired" });
+    }
+
     // Hash the new password
     const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update the password and remove the OTP fields
     user.password = hashedPassword;
+    user.otp = undefined;
+    user.otpExpires = undefined;
     await user.save();
 
-    res.status(200).json({ message: "Password reset successful" });
-
+    res.status(200).json({ message: "Password updated successfully" });
   } catch (error) {
-    res.status(400).json({ message: "Invalid or expired token", error });
+    console.error("Error updating password:", error);
+    res.status(500).json({ message: "Failed to update password", error: error.message });
   }
 };
 
+
+export const resetPassword = async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if OTP is valid and not expired
+    if (user.otp !== otp || user.otpExpires < Date.now()) {
+      return res.status(400).json({ message: "Invalid or expired OTP" });
+    }
+
+    // Hash the new password and update user password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+
+    // Clear OTP and expiration from the user record
+    user.otp = undefined;
+    user.otpExpires = undefined;
+    await user.save();
+
+    res.status(200).json({ message: "Password reset successful" });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to reset password", error });
+  }
+};

@@ -89,3 +89,82 @@ export const deletePost = async (req, res) => {
     res.status(500).json({ message: "Failed to delete post", error: err.message });
   }
 };
+
+
+// add comments
+
+// export const addComment = async (req, res, next) => {
+//   const { comment } = req.body;
+
+//   try {
+//     const postComment = await Post.findByIdAndUpdate(
+//       req.params.id,
+//       {
+//         $push: { comments: { text: comment, postedBy: req.user._id } },
+//       },
+//       { new: true }
+//     );
+//     if (!postComment) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Post not found",
+//       });
+//     }
+
+//     const post = await Post.findById(postComment._id).populate(
+//       "comments.postedBy",
+//       "name email"
+//     );
+
+//     res.status(200).json({
+//       success: true,
+//       post,
+//     });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+
+// export const addComment = async (req, res, next) => {
+//   const { comment } = req.body;
+
+//   // Log the user
+//   console.log('User:', req.user);
+
+//   // Validate input
+//   if (!comment || typeof comment !== 'string' || comment.trim() === '') {
+//     return res.status(400).json({
+//       success: false,
+//       message: "Comment is required and should be a non-empty string",
+//     });
+//   }
+
+//   try {
+//     const postComment = await Post.findByIdAndUpdate(
+//       req.params.id,
+//       {
+//         $push: { comments: { text: comment, postedBy: req.user._id } },
+//       },
+//       { new: true }
+//     );
+
+//     if (!postComment) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Post not found",
+//       });
+//     }
+
+//     const post = await Post.findById(postComment._id).populate(
+//       "comments.postedBy",
+//       "name email"
+//     );
+
+//     res.status(200).json({
+//       success: true,
+//       post,
+//     });
+//   } catch (error) {
+//     next(error);
+//   }
+// };

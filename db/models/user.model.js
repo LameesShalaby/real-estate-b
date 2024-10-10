@@ -7,6 +7,8 @@ const userSchema = new mongoose.Schema({
   role: { type: Number, default: 2 },
   phoneNumber: { type: String, required: true },
   avatar: { type: String, default: null, required: false },
+  otp: { type: Number },
+  otpExpires: { type: Date },
   createdAt: { type: Date, default: Date.now },
 });
 

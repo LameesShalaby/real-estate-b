@@ -53,6 +53,13 @@ const postSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   postDetail: postDetailSchema,
   savedPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: "SavedPost" }],
+  comments: [
+    {
+      comment: { type: String, required: true },
+      createdAt: { type: Date, default: Date.now },
+      postedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" , required: false},
+    },
+  ],
 });
 
 export default mongoose.model("Post", postSchema);
