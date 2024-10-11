@@ -14,7 +14,9 @@ const userSchema = new mongoose.Schema({
   otp: { type: Number },
   otpExpires: { type: Date },
   createdAt: { type: Date, default: Date.now },
-  favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }],
+  favorites: [
+    { type: mongoose.Schema.Types.ObjectId, ref: "Post", default: [] },
+  ],
 });
 
 export default mongoose.model("User", userSchema);

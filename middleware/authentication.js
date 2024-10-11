@@ -8,7 +8,7 @@ export const authenticate = (req, res, next) => {
       .json({ message: "Access denied. No token provided." });
   }
 
-  jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
+  jwt.verify(token, process.env.JWT_SECRET_KEY, (err, decoded) => {
     if (err) {
       return res.status(401).json({ message: "Invalid token." });
     }
