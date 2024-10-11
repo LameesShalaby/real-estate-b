@@ -1,33 +1,26 @@
 import mongoose from "mongoose";
 
-// PostDetail schema
 const postDetailSchema = new mongoose.Schema({
   desc: { type: String, required: true },
-  utilities: { type: String, required: false },
-  pet: { type: String, required: false },
-  income: { type: String, required: false },
-  size: { type: Number, required: false },
+  utilities: { type: String },
+  pet: { type: String },
+  income: { type: String },
+  size: { type: Number },
   bedroom: { type: Number, required: true },
   bathroom: { type: Number, required: true },
-  garage: { type: Number, required: false }, // Optional garage field
-  type: {
-    type: String,
-    enum: ["buy", "rent"],
-    required: true,
-  },
-  // Nearby amenities
-  school: { type: Number, required: false },
-  bus: { type: Number, required: false },
-  restaurant: { type: Number, required: false },
-  university: { type: Number, required: false },
-  grocerycenter: { type: Number, required: false },
-  market: { type: Number, required: false },
-  hospital: { type: Number, required: false },
-  metroStation: { type: Number, required: false },
-  gym: { type: Number, required: false },
+  garage: { type: Number },
+  type: { type: String, enum: ["buy", "rent"], required: true },
+  school: { type: Number },
+  bus: { type: Number },
+  restaurant: { type: Number },
+  university: { type: Number },
+  grocerycenter: { type: Number },
+  market: { type: Number },
+  hospital: { type: Number },
+  metroStation: { type: Number },
+  gym: { type: Number },
 });
 
-// Post schema
 const postSchema = new mongoose.Schema({
   title: { type: String, required: true },
   desc: { type: String, required: true },
@@ -39,11 +32,7 @@ const postSchema = new mongoose.Schema({
   bathroom: { type: Number, required: true },
   latitude: { type: String, required: true },
   longitude: { type: String, required: true },
-  type: {
-    type: String,
-    enum: ["buy", "rent"],
-    required: true,
-  },
+  type: { type: String, enum: ["buy", "rent"], required: true },
   property: {
     type: String,
     enum: ["apartment", "house", "villa"],
@@ -57,7 +46,7 @@ const postSchema = new mongoose.Schema({
     {
       comment: { type: String, required: true },
       createdAt: { type: Date, default: Date.now },
-      postedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" , required: false},
+      postedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     },
   ],
 });

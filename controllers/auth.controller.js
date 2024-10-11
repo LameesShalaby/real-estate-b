@@ -122,7 +122,6 @@ export const forgotPassword = async (req, res) => {
   }
 };
 
-
 export const verifyOtpAndUpdatePassword = async (req, res) => {
   try {
     const { email, otp, newPassword } = req.body;
@@ -134,7 +133,7 @@ export const verifyOtpAndUpdatePassword = async (req, res) => {
     }
 
     // Check if OTP is valid and not expired
-    
+
     if (user.otp !== parseInt(otp, 10)) {
       return res.status(400).json({ message: "Invalid OTP" });
     }
@@ -154,10 +153,11 @@ export const verifyOtpAndUpdatePassword = async (req, res) => {
     res.status(200).json({ message: "Password updated successfully" });
   } catch (error) {
     console.error("Error updating password:", error);
-    res.status(500).json({ message: "Failed to update password", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to update password", error: error.message });
   }
 };
-
 
 export const resetPassword = async (req, res) => {
   const { email, otp, newPassword } = req.body;

@@ -1,6 +1,5 @@
-import bcrypt from 'bcrypt';
+import bcryptjs from "bcryptjs";
 import User from "../db/models/user.model.js";
-
 
 // Get All users
 
@@ -18,20 +17,19 @@ export const getAllUsers = async (req, res) => {
 // Add User
 export const addUser = async (req, res) => {
   try {
-    const { username, email, password,  phoneNumber,role, avatar } = req.body;
+    const { username, email, password, phoneNumber, role, avatar } = req.body;
 
-    // Verify the existence of the password
     if (!password) {
       return res.status(400).json({ message: "Password is required" });
     }
 
     // Hashed Password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcryptjs.hash(password, 10);
 
     const newUser = new User({
       username,
       email,
-      password: hashedPassword, 
+      password: hashedPassword,
       phoneNumber,
       role,
       avatar,
@@ -43,8 +41,6 @@ export const addUser = async (req, res) => {
     res.status(400).json({ message: "Failed to add user", error: err.message });
   }
 };
-
-
 
 // Update User
 export const updateUser = async (req, res) => {
@@ -75,16 +71,16 @@ export const updateUser = async (req, res) => {
 
 export const updatePasswordWithOTP = async (req, res) => {
   try {
-    const { email ,newPassword } = req.body;
+    const { email, newPassword } = req.body;
 
-    // Find the user by email 
+    // Find the user by email
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
     // Hash the new password
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const hashedPassword = await bcryptjs.hash(newPassword, 10);
 
     // Update the user's password
     user.password = hashedPassword;
@@ -92,7 +88,9 @@ export const updatePasswordWithOTP = async (req, res) => {
 
     res.status(200).json({ message: "Password updated successfully" });
   } catch (err) {
-    res.status(500).json({ message: "Failed to update password", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Failed to update password", error: err.message });
   }
 };
 
@@ -107,6 +105,8 @@ export const deleteUser = async (req, res) => {
     res.status(200).json({ message: "User deleted successfully" });
   } catch (err) {
     console.log(err);
-    res.status(500).json({ message: "Failed to delete user", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Failed to delete user", error: err.message });
   }
 };
