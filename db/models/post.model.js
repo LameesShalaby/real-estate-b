@@ -44,9 +44,7 @@ const postSchema = new mongoose.Schema({
   savedPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: "SavedPost" }],
   comments: [
     {
-      comment: { type: String, required: true },
-      createdAt: { type: Date, default: Date.now },
-      postedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      default: {},
     },
   ],
 });

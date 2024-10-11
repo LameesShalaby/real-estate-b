@@ -6,7 +6,9 @@ export const getAllPosts = async (req, res) => {
     const posts = await Post.find().populate("userId", "username");
     res.status(200).json(posts);
   } catch (err) {
-    res.status(500).json({ message: "Failed to retrieve posts", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Failed to retrieve posts", error: err.message });
   }
 };
 
@@ -65,19 +67,23 @@ export const updatePost = async (req, res) => {
     });
 
     if (!updatedPost) {
-      return res.status(404).json({ message: "Post not found or no changes made" });
+      return res
+        .status(404)
+        .json({ message: "Post not found or no changes made" });
     }
 
     res.status(200).json({ message: "Post updated successfully", updatedPost });
   } catch (err) {
     console.log(err);
-    res.status(500).json({ message: "Failed to update post", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Failed to update post", error: err.message });
   }
 };
 
 // Delete post
 export const deletePost = async (req, res) => {
-  const id = req.params.id; 
+  const id = req.params.id;
 
   try {
     const post = await Post.findByIdAndDelete(id);
@@ -86,44 +92,30 @@ export const deletePost = async (req, res) => {
     }
     res.status(200).json({ message: "Post deleted successfully" });
   } catch (err) {
-    res.status(500).json({ message: "Failed to delete post", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Failed to delete post", error: err.message });
   }
 };
 
-
 // add comments
 
-// export const addComment = async (req, res, next) => {
-//   const { comment } = req.body;
+export const addComment = async (req, res) => {
+  const { comment } = req.body;
 
-//   try {
-//     const postComment = await Post.findByIdAndUpdate(
-//       req.params.id,
-//       {
-//         $push: { comments: { text: comment, postedBy: req.user._id } },
-//       },
-//       { new: true }
-//     );
-//     if (!postComment) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "Post not found",
-//       });
-//     }
+  try {
+    const post = await Post.findById(req.params.id);
+    post.comments.push(comment);
+    const newpost = await Post.findByIdAndUpdate(req.params.id, post);
 
-//     const post = await Post.findById(postComment._id).populate(
-//       "comments.postedBy",
-//       "name email"
-//     );
-
-//     res.status(200).json({
-//       success: true,
-//       post,
-//     });
-//   } catch (error) {
-//     next(error);
-//   }
-// };
+    res.status(200).json({
+      success: true,
+      newpost,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 // export const addComment = async (req, res, next) => {
 //   const { comment } = req.body;
