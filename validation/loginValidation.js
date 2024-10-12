@@ -9,4 +9,5 @@ export const loginValidation = Joi.object({
     "string.min": "Password must be at least 8 characters long",
     "string.empty": "Password is required",
   }),
+  rememberMe: Joi.boolean().optional(),
 });

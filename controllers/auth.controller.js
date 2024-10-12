@@ -49,17 +49,18 @@ export const login = async (req, res) => {
     return res.status(400).json({ error: error.details[0].message });
   }
   try {
-    const { email, password } = req.body;
+    const { email, password, rememberMe } = req.body;
     const findUser = await User.findOne({ email });
     if (!findUser) {
       return res.status(400).send("Wrong Email or password!");
     }
     const matchPassword = await bcryptjs.compare(password, findUser.password);
     if (matchPassword) {
+      const expiresIn = rememberMe ?  process.env.JWT_EXPIRATION_LONG : process.env.JWT_EXPIRATION_SHORT;
       const token = jwt.sign(
         { id: findUser._id, email: findUser.email },
         process.env.JWT_SECRET_KEY,
-        { expiresIn: "1h" }
+        { expiresIn }
       );
       res.status(200).json({
         message: "Logged in successfully",
