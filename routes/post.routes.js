@@ -13,4 +13,5 @@ router.post("/", authenticate, postController.addPost);
 router.patch("/:id", authenticate, postController.updatePost);
 router.delete("/:id", authenticate, postController.deletePost);
 router.post("/:id/comments", postController.addComment);
+
 export default router;
