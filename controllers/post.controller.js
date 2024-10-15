@@ -177,40 +177,41 @@ export const addComment = async (req, res) => {
   }
 };
 
+
 // Filter Posts
 export const getFilteredPosts = async (req, res) => {
   try {
-    const {
-      property,
-      type,
-      location,
-      city,
-      amenities,
-      bedroom,
-      bathroom,
-      minPrice,
-      maxPrice,
-    } = req.query;
+    const { property, type, location, city, amenities, bedroom, bathroom, minPrice, maxPrice } = req.query;
+
+    // Log the incoming filters for debugging
+    console.log("Filters received:", req.query);
 
     const query = {};
-
+    
     if (property) query.property = property;
     if (type) query.type = type;
     if (location) query.location = location;
     if (city) query.city = city;
-    if (bedroom) query.bedroom = bedroom;
-    if (bathroom) query.bathroom = bathroom;
+    if (bedroom) query.bedroom = Number(bedroom);
+    if (bathroom) query.bathroom = Number(bathroom);
+
     if (minPrice || maxPrice) {
       query.price = {};
       if (minPrice) query.price.$gte = Number(minPrice);
       if (maxPrice) query.price.$lte = Number(maxPrice);
     }
-    if (amenities) query.amenities = { $in: amenities.split(",") };
+
+    if (amenities) {
+      const amenitiesArray = amenities.split(",").map(item=> item.trim());
+      query.amenities = { $in: amenitiesArray };
+    }
+
+    console.log(query);
 
     const posts = await Post.find(query);
-
     res.status(200).json(posts);
   } catch (error) {
+    console.error("Error fetching posts:", error);
     res.status(500).json({ message: "Error fetching posts", error });
   }
 };
