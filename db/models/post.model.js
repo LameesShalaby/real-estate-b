@@ -22,6 +22,10 @@ const postSchema = new mongoose.Schema({
     enum: ["london", "sydney", "new gersy"],
     required: true,
   },
+  status : {
+    type: String , 
+    enum: ["published", "sold", "under review"]
+  },
   amenites: {
     type: Boolean,
     enum: ["air condtion", "heating", "floor","elevator","garden","parking","intercom","security","wifi","window type","pool","sheard gym","sherd spa","fireplace","cable tv"],
