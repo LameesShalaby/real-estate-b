@@ -177,15 +177,24 @@ export const addComment = async (req, res) => {
   }
 };
 
-
 // Filter Posts
 export const getFilteredPosts = async (req, res) => {
   try {
-    const { property, type, location, city, amenities, bedroom, bathroom, minPrice, maxPrice } = req.query;
+    const {
+      property,
+      type,
+      location,
+      city,
+      amenities,
+      bedroom,
+      bathroom,
+      minPrice,
+      maxPrice,
+    } = req.query;
     console.log("Filters received:", req.query);
 
     const query = {};
-    
+
     if (property) query.property = property;
     if (type) query.type = type;
     if (location) query.location = location;
@@ -200,7 +209,7 @@ export const getFilteredPosts = async (req, res) => {
     }
 
     if (amenities) {
-      const amenitiesArray = amenities.split(",").map(item=> item.trim());
+      const amenitiesArray = amenities.split(",").map((item) => item.trim());
       query.amenities = { $in: amenitiesArray };
     }
 
