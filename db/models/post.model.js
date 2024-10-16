@@ -22,6 +22,10 @@ const postSchema = new mongoose.Schema({
     enum: ["london", "sydney", "new gersy"],
     required: true,
   },
+  Status: {
+    type: String,
+    enum: ["published", "sold", "under review"],
+  },
   amenites: {
     type: String,
     enum: [
