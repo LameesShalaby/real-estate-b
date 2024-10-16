@@ -56,7 +56,9 @@ export const login = async (req, res) => {
     }
     const matchPassword = await bcryptjs.compare(password, findUser.password);
     if (matchPassword) {
-      const expiresIn = rememberMe ?  process.env.JWT_EXPIRATION_LONG : process.env.JWT_EXPIRATION_SHORT;
+      const expiresIn = rememberMe
+        ? process.env.JWT_EXPIRATION_LONG
+        : process.env.JWT_EXPIRATION_SHORT;
       const token = jwt.sign(
         { id: findUser._id, email: findUser.email },
         process.env.JWT_SECRET_KEY,
@@ -168,20 +170,31 @@ export const resetPassword = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-
+    console.log(otp);
+    console.log(user.otp);
     // Check if OTP is valid and not expired
-    if (user.otp !== otp || user.otpExpires < Date.now()) {
+    if (user.otp !== +otp) {
       return res.status(400).json({ message: "Invalid or expired OTP" });
     }
 
+    // user.otpExpires < Date.now()
+
     // Hash the new password and update user password
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-    user.password = hashedPassword;
+    const hashedPassword = await bcryptjs.hash(newPassword, 10);
+    console.log(hashedPassword);
+
+    console.log(user._id);
+    // user.password = hashedPassword;
+
+    const newUser = await User.findByIdAndUpdate(user._id, {
+      password: hashedPassword,
+    });
+    console.log(newUser);
 
     // Clear OTP and expiration from the user record
     user.otp = undefined;
     user.otpExpires = undefined;
-    await user.save();
+    await newUser.save();
 
     res.status(200).json({ message: "Password reset successful" });
   } catch (error) {
