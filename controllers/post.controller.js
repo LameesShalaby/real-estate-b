@@ -182,8 +182,6 @@ export const addComment = async (req, res) => {
 export const getFilteredPosts = async (req, res) => {
   try {
     const { property, type, location, city, amenities, bedroom, bathroom, minPrice, maxPrice } = req.query;
-
-    // Log the incoming filters for debugging
     console.log("Filters received:", req.query);
 
     const query = {};
