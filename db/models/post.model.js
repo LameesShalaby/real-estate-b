@@ -49,8 +49,13 @@ const postSchema = new mongoose.Schema({
   },
   featured: { type: Boolean },
   createdAt: { type: Date, default: Date.now },
-  comments: [{ type: String, defult: "" }],
-
+  comments: [
+    {
+      user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+      text: { type: String, required: true },
+      createdAt: { type: Date, default: Date.now },
+    },
+  ],
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
 });
 

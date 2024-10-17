@@ -186,20 +186,36 @@ export const deletePost = async (req, res) => {
 // add comments
 
 export const addComment = async (req, res) => {
-  const { comment } = req.body;
-
   try {
-    const post = await Post.findById(req.params.id);
-    post.comments.push(comment);
-    const newpost = await Post.findByIdAndUpdate(req.params.id, post);
+    const { text } = req.body;  // Extract comment text from the request body
+    const postId = req.params.id;  // Extract postId from the request parameters
+    console.log(req.user);
+    
+    const userId = req.user.id;  // Extract userId from the authenticated user
+    // Validate that the comment text is not empty or null
+    if (!text || text.trim() === "") {
+      return res.status(400).json({ message: "Comment cannot be empty." });
+    }
 
-    res.status(200).json({
-      success: true,
-      newpost,
-    });
-  } catch (error) {
-    console.log(error);
-  }
+    // Create a new comment object
+    const newComment = { user: userId, text };
+
+    // Update the post by pushing the new comment into the comments array
+    const updatedPost = await Post.findByIdAndUpdate(
+      postId,
+      { $push: { comments: newComment } }, // Use $push to add the new comment
+      { new: true, runValidators: true } // Return the updated post and validate
+    );
+
+    if (!updatedPost) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    res.status(200).json({ message: "Comment added successfully", post: updatedPost });
+    } catch (error) {
+    console.error("Error adding comment:", error); // Log the entire error for more context
+    res.status(500).json({ message: "Failed to add comment", error: error.message });
+    }
 };
 
 // Filter Posts
@@ -245,5 +261,38 @@ export const getFilteredPosts = async (req, res) => {
   } catch (error) {
     console.error("Error fetching posts:", error);
     res.status(500).json({ message: "Error fetching posts", error });
+  }
+};
+
+// get User Reviews
+export const getUserReviews = async (req, res) => {
+  try {
+    const userId = req.user.id; // Get user ID from the authenticated user
+    const posts = await Post.find({ 'comments.user': userId }) // Find posts with the user's comments
+      .populate('comments.user', 'username') // Populate the username for each comment
+      .exec();
+
+    // Log posts to check their structure
+    console.log('Posts:', posts);
+
+    const userComments = posts.flatMap(post => {
+      if (!post.comments) return []; // Check if comments exist
+      return post.comments
+        .filter(comment => comment.user && comment.user._id.toString() === userId) // Ensure comment.user exists
+        .map(comment => ({
+          postId: post._id,
+          postTitle: post.title,
+          comment: comment.text,
+          commentDate: comment.createdAt,
+        }));
+    });
+
+    if (userComments.length === 0) {
+      return res.status(200).json({ message: 'No reviews found' });
+    }
+
+    res.status(200).json(userComments);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching reviews', error: error.message });
   }
 };
