@@ -198,7 +198,7 @@ export const getFilteredPosts = async (req, res) => {
     if (property) query.property = property;
     if (type) query.type = type;
     if (location) query.location = location;
-    if (city) query.city = city;
+    if (city) query.city = { $regex: new RegExp(city, "i") };
     if (bedroom) query.bedroom = Number(bedroom);
     if (bathroom) query.bathroom = Number(bathroom);
 
