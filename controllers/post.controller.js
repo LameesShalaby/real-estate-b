@@ -74,6 +74,31 @@ export const addFavourites = async (req, res) => {
   }
 };
 
+export const removeFavourites = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { postId } = req.body;
+
+    const user = await User.findById(userId);
+
+    // Check if the post is in the user's favorites
+    if (!user?.favorites.includes(postId)) {
+      return res.status(404).json({ message: "Post not found in favorites." });
+    }
+
+    // Remove the post from the favorites array
+    user.favorites = user.favorites.filter(
+      (favorite) => favorite.toString() !== postId
+    );
+
+    await user.save();
+
+    res.status(200).json({ message: "Post removed from favorites." });
+  } catch (error) {
+    res.status(500).json({ message: "Server error.", error: error.message });
+  }
+};
+
 // Add post
 export const addPost = async (req, res) => {
   const {

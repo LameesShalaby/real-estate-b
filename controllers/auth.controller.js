@@ -81,6 +81,37 @@ export const login = async (req, res) => {
   }
 };
 
+// Get User
+export const getUser = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const user = await User.findById(userId).select(
+      "-password -otp -otpExpires"
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({
+      user: {
+        id: user._id,
+        email: user.email,
+        username: user.username,
+        phoneNumber: user.phoneNumber,
+        avatar: user.avatar,
+        role: user.role,
+        favorites: user.favorites,
+        createdAt: user.createdAt,
+      },
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Failed to retrieve user", error: error.message });
+  }
+};
+
 // Nodemailer
 // Configure the email transporter
 const transporter = nodemailer.createTransport({
