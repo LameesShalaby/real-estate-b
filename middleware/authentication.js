@@ -12,9 +12,7 @@ export const authenticate = (req, res, next) => {
     if (err) {
       return res.status(401).json({ message: "Invalid token." });
     }
-    req.user = decoded; // Save decoded user data to request
+    req.user = decoded; 
     next();
   });
 };
-
-

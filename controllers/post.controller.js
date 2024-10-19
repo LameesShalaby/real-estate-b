@@ -1,298 +1,352 @@
+import Joi from "joi";
 import Post from "../db/models/post.model.js";
 import User from "../db/models/user.model.js";
 
-// Get all posts
+// Get All Posts
 export const getAllPosts = async (req, res) => {
   try {
-    const posts = await Post.find().populate("userId", "username");
-    res.status(200).json(posts);
+    const posts = await Post.find();
+    res.json(posts);
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Failed to retrieve posts", error: err.message });
+    res.status(500).send("Server Error");
   }
 };
 
-// Get post details by ID
+// Add Post
+export const addPost = async (req, res) => {
+
+  const schema = Joi.object({
+    title: Joi.string().required(),
+    desc: Joi.string().required(),
+    price: Joi.number().required(),
+    images: Joi.array().items(Joi.string()).optional(), 
+    address: Joi.string().required(),
+    city: Joi.string().required(),
+    bedroom: Joi.number().required(),
+    bathroom: Joi.number().required(),
+    latitude: Joi.number().min(-90).max(90).required(), 
+    longitude: Joi.number().min(-180).max(180).required(), 
+    sqft: Joi.number().required(),
+    type: Joi.string().valid("buy", "rent").required(), 
+    property: Joi.string()
+      .valid("apartment", "house", "villa", "studio")
+      .required(), 
+    location: Joi.string().required(),
+    status: Joi.string()
+      .valid("published", "sold", "under review")
+      .default("under review"), 
+    amenities: Joi.array()
+      .items(
+        Joi.string().valid(
+          "air condition",
+          "heating",
+          "floor",
+          "elevator",
+          "garden",
+          "parking",
+          "intercom",
+          "security",
+          "wifi",
+          "window type",
+          "pool",
+          "shared gym",
+          "shared spa",
+          "fireplace",
+          "cable tv"
+        )
+      )
+      .required(), 
+    featured: Joi.boolean().default(false), 
+    comments: Joi.array()
+      .items(
+        Joi.object({
+          user: Joi.string().required(),
+          text: Joi.string().max(500).required(),
+          createdAt: Joi.date().optional(),
+        })
+      )
+      .optional(), 
+    userId: Joi.string().optional(), 
+  });
+
+  const { error } = schema.validate(req.body);
+  if (error) return res.status(400).send(error.details[0].message);
+
+  try {
+    const post = new Post({ ...req.body, userId: req.user._id }); 
+    await post.save();
+    res.status(201).send("Post added successfully.");
+  } catch (err) {
+    console.error(err); 
+    res.status(500).send("Server Error");
+  }
+};
+
+// Update Post
+export const updatePost = async (req, res) => {
+  const { id } = req.params;
+
+  const schema = Joi.object({
+    title: Joi.string().optional(),
+    desc: Joi.string().optional(),
+    price: Joi.number().optional(),
+    images: Joi.array().items(Joi.string()).optional(),
+    address: Joi.string().optional(),
+    city: Joi.string().optional(),
+    bedroom: Joi.number().optional(),
+    bathroom: Joi.number().optional(),
+    latitude: Joi.number().min(-90).max(90).optional(),
+    longitude: Joi.number().min(-180).max(180).optional(),
+    sqft: Joi.number().optional(),
+    type: Joi.string().valid("buy", "rent").optional(),
+    property: Joi.string()
+      .valid("apartment", "house", "villa", "studio")
+      .optional(),
+    location: Joi.string().optional(),
+    status: Joi.string().valid("published", "sold", "under review").optional(),
+    amenities: Joi.array()
+      .items(
+        Joi.string().valid(
+          "air condition",
+          "heating",
+          "floor",
+          "elevator",
+          "garden",
+          "parking",
+          "intercom",
+          "security",
+          "wifi",
+          "window type",
+          "pool",
+          "shared gym",
+          "shared spa",
+          "fireplace",
+          "cable tv"
+        )
+      )
+      .optional(),
+    featured: Joi.boolean().optional(),
+    comments: Joi.array()
+      .items(
+        Joi.object({
+          user: Joi.string().required(),
+          text: Joi.string().max(500).required(),
+          createdAt: Joi.date().optional(),
+        })
+      )
+      .optional(),
+    userId: Joi.string().optional(),
+  });
+
+  const { error } = schema.validate(req.body);
+  if (error) return res.status(400).send(error.details[0].message);
+
+  try {
+    const post = await Post.findById(id);
+    if (!post) return res.status(404).send("Post not found.");
+
+
+    if (post.userId.toString() !== req.user._id.toString()) {
+      return res
+        .status(403)
+        .send("You do not have permission to update this post.");
+    }
+
+   
+    Object.assign(post, req.body);
+
+    await post.save();
+
+    res.status(200).send("Post updated successfully.");
+  } catch (err) {
+    res.status(500).send("Server Error");
+  }
+};
+
+// Delete Post
+export const deletePost = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const post = await Post.findById(id);
+    console.log(post); 
+
+    if (!post) return res.status(404).send("Post not found.");
+
+
+    console.log(
+      `Post User ID: ${post.userId}, Logged In User ID: ${req.user._id}`
+    );
+
+
+    if (post.userId.toString() !== req.user._id.toString()) {
+      return res
+        .status(403)
+        .send("You do not have permission to delete this post.");
+    }
+
+
+    await Post.deleteOne({ _id: id });
+
+    res.status(200).send("Post deleted successfully.");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server Error");
+  }
+};
+
+// Get Post Details
 export const getPostDetails = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const post = await Post.findById(id)
-      .populate("userId", "username")
-      .populate("comments");
+    const post = await Post.findById(id).populate("userId", "username email");
+    if (!post) return res.status(404).send("Post not found.");
 
-    if (!post) {
-      return res.status(404).json({ message: "Post not found" });
-    }
-
-    res.status(200).json(post);
+    res.json(post);
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Failed to retrieve post details", error: err.message });
+    res.status(500).send("Server Error");
   }
 };
 
-export const getAllFavourite = async (req, res) => {
+// Add Favorite
+export const addFavorite = async (req, res) => {
+  const { id } = req.params;
+
   try {
-    const userId = req.user.id;
+    const user = await User.findById(req.user._id);
 
-    const user = await User.findById(userId).populate("favorites");
+    if (!user) {
+      return res.status(404).send("User not found.");
+    }
 
-    res.status(200).json(user.favorites);
+    const post = await Post.findById(id);
+    if (!post) {
+      return res.status(404).send("Post not found.");
+    }
+
+    if (!user.favorites.includes(id)) {
+      user.favorites.push(id);
+      await user.save();
+      return res.status(200).send("Post added to favorites.");
+    } else {
+      return res.status(400).send("Post is already in favorites.");
+    }
   } catch (err) {
-    res.status(500).json({
-      message: "Failed to retrieve favorite users",
-      error: err.message,
-    });
+    console.error(err);
+    res.status(500).send("Server Error");
   }
 };
 
-export const addFavourites = async (req, res) => {
+// Remove Favorite
+export const removeFavorite = async (req, res) => {
+  const { id } = req.params;
   try {
-    const userId = req.user.id;
-    const { postId } = req.body;
-
-    const post = await Post.findById(postId);
-    if (!post) {
-      return res.status(404).json({ message: "Post not found." });
-    }
-
-    const user = await User.findById(userId);
-
-    if (user?.favorites.includes(postId)) {
-      return res.status(400).json({ message: "Post already in favorites." });
-    }
-
-    user?.favorites.push(postId);
+    const user = await User.findById(req.user._id);
+    user.favorites = user.favorites.filter((fav) => fav.toString() !== id);
     await user.save();
-
-    res.status(200).json({ message: "Post added to favorites." });
-  } catch (error) {
-    res.status(500).json({ message: "Server error.", error: error.message });
-  }
-};
-
-export const removeFavourites = async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const { postId } = req.body;
-
-    const user = await User.findById(userId);
-
-    // Check if the post is in the user's favorites
-    if (!user?.favorites.includes(postId)) {
-      return res.status(404).json({ message: "Post not found in favorites." });
-    }
-
-    // Remove the post from the favorites array
-    user.favorites = user.favorites.filter(
-      (favorite) => favorite.toString() !== postId
-    );
-
-    await user.save();
-
-    res.status(200).json({ message: "Post removed from favorites." });
-  } catch (error) {
-    res.status(500).json({ message: "Server error.", error: error.message });
-  }
-};
-
-// Add post
-export const addPost = async (req, res) => {
-  const {
-    title,
-    desc,
-    price,
-    images,
-    address,
-    city,
-    bedroom,
-    bathroom,
-    latitude,
-    longitude,
-    type,
-    property,
-  } = req.body;
-
-  try {
-    const newPost = new Post({
-      title,
-      desc,
-      price,
-      images,
-      address,
-      city,
-      bedroom,
-      bathroom,
-      latitude,
-      longitude,
-      type,
-      property,
-      userId: req.user.id,
-    });
-
-    await newPost.save();
-    res.status(201).json({ message: "Post added successfully", post: newPost });
+    res.status(200).send("Post removed from favorites.");
   } catch (err) {
-    res.status(500).json({ message: "Failed to add post", error: err.message });
+    res.status(500).send("Server Error");
   }
 };
 
-// Update post
-export const updatePost = async (req, res) => {
-  const id = req.params.id;
-  const updates = req.body;
-
-  try {
-    const updatedPost = await Post.findByIdAndUpdate(id, updates, {
-      new: true,
-      runValidators: true, // Ensure validators are applied
-    });
-
-    if (!updatedPost) {
-      return res
-        .status(404)
-        .json({ message: "Post not found or no changes made" });
-    }
-
-    res.status(200).json({ message: "Post updated successfully", updatedPost });
-  } catch (err) {
-    console.log(err);
-    res
-      .status(500)
-      .json({ message: "Failed to update post", error: err.message });
-  }
-};
-
-// Delete post
-export const deletePost = async (req, res) => {
-  const id = req.params.id;
-
-  try {
-    const post = await Post.findByIdAndDelete(id);
-    if (!post) {
-      return res.status(404).json({ message: "Post not found" });
-    }
-    res.status(200).json({ message: "Post deleted successfully" });
-  } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Failed to delete post", error: err.message });
-  }
-};
-
-// add comments
-
+// Add Comment
 export const addComment = async (req, res) => {
+  const { id } = req.params;
+  const { text } = req.body;
+
+  console.log(`Post ID: ${id}`);
+
+  const schema = Joi.object({
+    text: Joi.string().required().max(500),
+  });
+
+  const { error } = schema.validate({ text });
+  if (error) return res.status(400).send(error.details[0].message);
+
   try {
-    const { text } = req.body;  // Extract comment text from the request body
-    const postId = req.params.id;  // Extract postId from the request parameters
-    console.log(req.user);
-    
-    const userId = req.user.id;  // Extract userId from the authenticated user
-    // Validate that the comment text is not empty or null
-    if (!text || text.trim() === "") {
-      return res.status(400).json({ message: "Comment cannot be empty." });
-    }
+    const post = await Post.findById(id);
+    if (!post) return res.status(404).send("Post not found.");
 
-    // Create a new comment object
-    const newComment = { user: userId, text };
+    const comment = {
+      user: req.user._id,
+      text,
+    };
 
-    // Update the post by pushing the new comment into the comments array
-    const updatedPost = await Post.findByIdAndUpdate(
-      postId,
-      { $push: { comments: newComment } }, // Use $push to add the new comment
-      { new: true, runValidators: true } // Return the updated post and validate
-    );
+    post.comments.push(comment);
+    await post.save();
 
-    if (!updatedPost) {
-      return res.status(404).json({ message: "Post not found" });
-    }
-
-    res.status(200).json({ message: "Comment added successfully", post: updatedPost });
-    } catch (error) {
-    console.error("Error adding comment:", error); // Log the entire error for more context
-    res.status(500).json({ message: "Failed to add comment", error: error.message });
-    }
+    res.status(201).json({ message: "Comment added successfully.", comment });
+  } catch (err) {
+    console.error(err);
+  }
 };
 
-// Filter Posts
+export const getAllComments = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const post = await Post.findById(id).populate("comments.user", "username");
+    if (!post) return res.status(404).send("Post not found.");
+
+    res.json(post.comments);
+  } catch (err) {
+    res.status(500).send("Server Error");
+  }
+};
+
 export const getFilteredPosts = async (req, res) => {
+  const { price, type, property, location } = req.query;
+
+  const filters = {};
+
+  if (price) {
+    filters.price = { $lte: Number(price) };
+  }
+
+  if (type) {
+    filters.type = type;
+  }
+
+  if (property) {
+    filters.property = property;
+  }
+
+  if (location) {
+    filters.location = { $regex: location, $options: "i" };
+  }
+
   try {
-    const {
-      property,
-      type,
-      location,
-      city,
-      amenities,
-      bedroom,
-      bathroom,
-      minPrice,
-      maxPrice,
-    } = req.query;
-    console.log("Filters received:", req.query);
-
-    const query = {};
-
-    if (property) query.property = property;
-    if (type) query.type = type;
-    if (location) query.location = location;
-    if (city) query.city = { $regex: new RegExp(city, "i") };
-    if (bedroom) query.bedroom = Number(bedroom);
-    if (bathroom) query.bathroom = Number(bathroom);
-
-    if (minPrice || maxPrice) {
-      query.price = {};
-      if (minPrice) query.price.$gte = Number(minPrice);
-      if (maxPrice) query.price.$lte = Number(maxPrice);
-    }
-
-    if (amenities) {
-      const amenitiesArray = amenities.split(",").map((item) => item.trim());
-      query.amenities = { $in: amenitiesArray };
-    }
-
-    console.log(query);
-
-    const posts = await Post.find(query);
-    res.status(200).json(posts);
-  } catch (error) {
-    console.error("Error fetching posts:", error);
-    res.status(500).json({ message: "Error fetching posts", error });
+    const posts = await Post.find(filters).populate("userId", "username email");
+    res.json(posts);
+  } catch (err) {
+    res.status(500).send("Server Error");
   }
 };
 
-// get User Reviews
-export const getUserReviews = async (req, res) => {
-  try {
-    const userId = req.user.id; // Get user ID from the authenticated user
-    const posts = await Post.find({ 'comments.user': userId }) // Find posts with the user's comments
-      .populate('comments.user', 'username') // Populate the username for each comment
-      .exec();
+// Get All Favorites
 
-    // Log posts to check their structure
-    console.log('Posts:', posts);
+// export const getAllFavorites = async (req, res) => {
+//   console.log("fffffffff");
 
-    const userComments = posts.flatMap(post => {
-      if (!post.comments) return []; // Check if comments exist
-      return post.comments
-        .filter(comment => comment.user && comment.user._id.toString() === userId) // Ensure comment.user exists
-        .map(comment => ({
-          postId: post._id,
-          postTitle: post.title,
-          comment: comment.text,
-          commentDate: comment.createdAt,
-        }));
-    });
+//   try {
+//     if (!req.user || !req.user._id) {
+//       return res
+//         .status(400)
+//         .send("User is not authenticated or ID is missing.");
+//     }
 
-    if (userComments.length === 0) {
-      return res.status(200).json({ message: 'No reviews found' });
-    }
+//     const user = await User.findById(req.user._id).populate("favorites");
 
-    res.status(200).json(userComments);
-  } catch (error) {
-    res.status(500).json({ message: 'Error fetching reviews', error: error.message });
-  }
-};
+//     if (!user) {
+//       console.error("User not found with ID:", req.user._id);
+//       return res.status(404).send("User not found.");
+//     }
+
+//     res.json(user.favorites);
+//   } catch (err) {
+//     console.error("Error fetching favorites:", err);
+//     res.status(500).send("Server Error");
+//   }
+// };
