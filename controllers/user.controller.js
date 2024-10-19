@@ -1,5 +1,11 @@
 import bcryptjs from "bcryptjs";
 import User from "../db/models/user.model.js";
+import jwt from 'jsonwebtoken'
+import dotenv from "dotenv";
+
+
+
+dotenv.config();
 
 // Get All users
 
@@ -11,6 +17,26 @@ export const getAllUsers = async (req, res) => {
     res
       .status(500)
       .json({ message: "Failed to retrieve users", error: err.message });
+  }
+};
+
+// getUserId
+
+export const getUserId = async(req, res) =>{
+
+  try{
+    // const id = req.params.id
+    const token = req.headers['token']
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY)
+    console.log(token)
+    console.log(decoded)
+    const {id} = decoded
+    const user = await User.findById(id)
+    res.status(200).json(user)
+  }
+  
+  catch (err) {
+    res.status(500).json(err)
   }
 };
 

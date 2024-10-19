@@ -5,6 +5,7 @@ import { authenticate } from "../middleware/authentication.js";
 const router = Router();
 
 router.get("/", userController.getAllUsers);
+router.get("/details", userController.getUserId);
 router.post("/",  userController.addUser);
 router.patch("/", authenticate, userController.updateUser);
 router.delete("/:id", authenticate, userController.deleteUser);
