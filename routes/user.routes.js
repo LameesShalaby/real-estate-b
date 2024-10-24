@@ -7,7 +7,7 @@ const router = Router();
 router.get("/", userController.getAllUsers);
 router.get("/details", userController.getUserId);
 router.post("/",  userController.addUser);
-router.patch("/", authenticate, userController.updateUser);
+router.patch("/:id", authenticate, userController.updateUser);
 router.delete("/:id", authenticate, userController.deleteUser);
 router.post("/update-password", userController.updatePasswordWithOTP);
 export default router;

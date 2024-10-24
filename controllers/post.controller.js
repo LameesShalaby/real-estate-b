@@ -302,3 +302,39 @@ export const getUserReviews = async (req, res) => {
     res.status(500).json({ message: 'Error fetching reviews', error: error.message });
   }
 };
+
+
+// Delete a comment from a post
+export const deleteComment = async (req, res) => {
+  try {
+    const { postId, commentId } = req.params;
+
+    // Find the post by postId
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    // Filter out the comment with the specified commentId
+    const updatedComments = post.comments.filter(
+      (comment) => comment._id.toString() !== commentId
+    );
+
+    // If no comment is found, return an error
+    if (updatedComments.length === post.comments.length) {
+      return res.status(404).json({ message: 'Comment not found' });
+    }
+
+    // Update the post's comments array
+    post.comments = updatedComments;
+
+    // Save the updated post
+    await post.save();
+
+    return res.status(200).json({ message: 'Comment deleted successfully', post });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Server error', error });
+  }
+};

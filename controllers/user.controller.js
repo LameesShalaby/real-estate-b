@@ -76,7 +76,7 @@ export const updateUser = async (req, res) => {
     const updatedUser = await User.findByIdAndUpdate(
       req.user.id,
       { username, email, password, role, phoneNumber, avatar },
-      { new: true }
+      { new: true , runValidators: true }
     );
 
     if (!updatedUser) {
@@ -92,6 +92,44 @@ export const updateUser = async (req, res) => {
       .json({ message: "Failed to update user", error: err.message });
   }
 };
+
+// export const updateUser = async (req, res) => {
+//   try {
+//     const { username, email, password, role, phoneNumber, avatar } = req.body;
+//     const updateFields = {};
+
+//     // Check which fields were provided and should be updated
+//     if (username) updateFields.username = username;
+//     if (email) updateFields.email = email;
+//     if (role) updateFields.role = role;
+//     if (phoneNumber) updateFields.phoneNumber = phoneNumber;
+//     if (avatar) updateFields.avatar = avatar;
+
+//     // If password is provided, hash it before updating
+//     if (password) {
+//       const salt = await bcryptjs.genSalt(10);
+//       updateFields.password = await bcryptjs.hash(password, salt);
+//     }
+
+//     // Find user by ID and update
+//     const updatedUser = await User.findByIdAndUpdate(
+//       req.user.id,
+//       { $set: updateFields },
+//       { new: true }
+//     );
+
+//     if (!updatedUser) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     res.status(200).json({
+//       message: "User updated successfully",
+//       user: updatedUser,
+//     });
+//   } catch (err) {
+//     res.status(400).json({ message: "Failed to update user", error: err.message });
+//   }
+// };
 
 // update pass (otp)
 

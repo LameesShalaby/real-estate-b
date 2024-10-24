@@ -12,6 +12,7 @@ router.get("/filter", postController.getFilteredPosts);
 router.get("/:id", postController.getPostDetails);
 router.post("/", authenticate, postController.addPost);
 router.patch("/:id", authenticate, postController.updatePost);
+router.delete('/:postId/comments/:commentId',postController.deleteComment);
 router.delete("/:id", authenticate, postController.deletePost);
 router.post("/:id/comments", authenticate, postController.addComment);
 router.get('/user/reviews', authenticate, postController.getUserReviews);

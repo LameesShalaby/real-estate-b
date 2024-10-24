@@ -69,6 +69,7 @@ const postSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
   comments: [
     {
+      commentId: { type: mongoose.Schema.Types.ObjectId, required: true, auto: true },
       user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
       text: { type: String, required: true },
       createdAt: { type: Date, default: Date.now },
